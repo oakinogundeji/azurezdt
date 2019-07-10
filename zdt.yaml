@@ -1,0 +1,6 @@
+---
+    - name: execute zero downtime rolling update for 2 webservers behind a loadbalancer on a target VNET in the UK west region
+      hosts: localhost
+      debugger: on_failed
+      gather_facts: yes
+      tasks:

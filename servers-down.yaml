@@ -1,0 +1,53 @@
+---
+    - name: teardown 2 webservers behind a loadbalancer on a target VNET in the UK west region
+      hosts: localhost
+      debugger: on_failed
+      gather_facts: yes
+      tasks:
+
+        - name: Remove the webservers and all resources that were autocreated
+          azure_rm_virtualmachine:
+            resource_group: cloudexRG
+            name: "{{ item }}"
+            remove_on_absent: all_autocreated
+            state: absent
+          with_items:
+            - 'webvm_1'
+            - 'webvm_2'
+          register: servers_down
+
+        - debug: var=servers_down 
+
+        - name: teardown the private NICs
+          azure_rm_networkinterface:
+            resource_group: cloudexRG
+            name: "{{ item }}"
+            state: absent
+          with_items:
+            - 'cloudex_private_nic_1'
+            - 'cloudex_private_nic_2'
+          register: nics_down
+
+        - debug: var=nics_down
+
+        - name: delete loadbalancer 
+          azure_rm_loadbalancer:
+            resource_group: cloudexRG
+            name: cloudexLB
+            state: absent
+          register: lb_down
+
+        - debug: var=lb_down
+
+        - name: delete public IP
+          azure_rm_publicipaddress:
+            resource_group: cloudexRG
+            name: 'cloudex_public_ip'
+            state: absent
+          register: pub_ip_down
+
+        - debug: var=pub_ip_down
+
+        - name: pause for 2 minutes to ensure all down
+          pause:
+            minutes: 2

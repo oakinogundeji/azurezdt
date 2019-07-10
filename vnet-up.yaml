@@ -1,0 +1,61 @@
+---
+    - name: standup an azure vnet in the UK west region with public and private subnets, public and private NICs and secgrps
+      hosts: localhost
+      debugger: on_failed
+      gather_facts: yes
+      tasks:
+
+        - name: Create a resource group
+          azure_rm_resourcegroup:
+            name: cloudexRG
+            location: ukwest
+            state: present
+          register: rg_up
+
+        - debug: var=rg_up
+        
+        - name: standup the vnet
+          azure_rm_virtualnetwork:
+            location: ukwest
+            resource_group: cloudexRG
+            name: "{{ VNET_NAME }}"
+            address_prefixes_cidr:
+                - "10.0.0.0/16"
+            purge_address_prefixes: yes
+            state: present
+          register: vnet_up
+
+        - debug: var=vnet_up
+
+        - name: create public subnet
+          azure_rm_subnet:
+            resource_group: cloudexRG
+            name: 'cloudex_public'
+            address_prefix_cidr: '10.0.1.0/24'
+            virtual_network_name: "{{ VNET_NAME }}"
+            state: present
+          register: subnet_up
+
+        - debug: var=subnet_up
+
+        - name: create SecGrp for SSH, HTTP and HTTPS access
+          azure_rm_securitygroup:
+            resource_group: cloudexRG
+            name: websg
+            purge_default_rules: yes
+            purge_rules: yes
+            rules:
+              - name: 'AllowSSH_HTTP_HTTPS'
+                protocol: Tcp
+                source_address_prefix: '*'
+                destination_port_range:
+                  - 22
+                  - 80
+                  - 443
+                access: Allow
+                priority: 100
+            state: present
+          register: websg_up
+
+        - debug: var=websg_up              
+          

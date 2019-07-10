@@ -1,0 +1,105 @@
+---
+    - name: deploy 2 webservers behind a loadbalancer on a target VNET in the UK west region
+      hosts: localhost
+      debugger: on_failed
+      gather_facts: yes
+      tasks:
+
+        - name: create 1 public IP for LB
+          azure_rm_publicipaddress:
+            resource_group: cloudexRG
+            name: 'cloudex_public_ip'
+            allocation_method: dynamic
+            state: present
+          register: pub_ip_up
+
+        - debug: var=pub_ip_up
+
+        - name: create LB with health probe and LB rules and attach public IP to it
+          azure_rm_loadbalancer:
+            resource_group: cloudexRG
+            name: cloudexLB
+            frontend_ip_configurations:
+              - name: frontendipconf
+                public_ip_address: 'cloudex_public_ip'
+            backend_address_pools:
+              - name: backendaddrpool
+            probes:
+              - name: 'http_up'
+                port: 80
+                protocol: Tcp
+                fail_count: 5
+                interval: 30
+            load_balancing_rules:
+              - name: 'cloudex-lb_rule'
+                frontend_ip_configuration: frontendipconf
+                backend_address_pool: backendaddrpool
+                frontend_port: 80
+                backend_port: 80
+                probe: 'http_up'
+            state: present
+          register: lb_up
+
+        - debug: var=lb_up
+
+        - name: create 2 private NICs
+          azure_rm_networkinterface:
+            resource_group: cloudexRG
+            name: "{{ item.name }}"
+            virtual_network_name: "{{ VNET_NAME }}"
+            subnet_name: 'cloudex_public'
+            security_group: websg
+            ip_configurations:
+              - name: "{{ item.confname }}"
+                primary: yes
+                load_balancer_backend_address_pools: 
+                  - name: backendaddrpool
+                    load_balancer: cloudexLB
+            state: present
+          with_items:
+            - { name: 'cloudex_private_nic_1', confname: 'private_conf_1'}
+            - { name: 'cloudex_private_nic_2', confname: 'private_conf_2'}
+          register: priv_nics_up
+
+        - debug: var=priv_nics_up
+        
+        - name: get PWD
+          set_fact:
+            pwd: "{{ lookup('env','PWD') }}"
+
+        - name: create path to customdata
+          set_fact:
+            custom_data_pth: "{{ pwd }}/files/vm-custom-data.sh"
+
+        - name: create path to ssh key
+          set_fact:
+            ssh_key_pth: "{{ pwd }}/files/cloudex-eu-west-1.pem"
+        
+        - name: standup 2 Ubuntu 18.04 LTS VM attaching to private NICs in a subnet of an existing VNET and use custom data to install nginx
+          azure_rm_virtualmachine:
+            resource_group: cloudexRG
+            name: "{{ item.vm }}"
+            custom_data: "{{ lookup('file', '{{ custom_data_pth }}') }}"
+            vm_size: Standard_B1s
+            network_interfaces: "{{ item.nic }}"
+            admin_username: cloudex
+            ssh_password_enabled: no
+            ssh_public_keys:
+            - path: /home/cloudex/.ssh/authorized_keys
+              key_data: "{{ lookup('file', '{{ ssh_key_pth }}') }}"
+            image:
+              offer: UbuntuServer
+              publisher: Canonical
+              sku: '18.04-LTS'
+              version: latest
+            state: present
+          with_items:
+            - { nic: 'cloudex_private_nic_1', vm: 'webvm1' }
+            - { nic: 'cloudex_private_nic_2', vm: 'webvm2'}
+          register: servers_up
+
+        - debug: var=servers_up
+
+        - name: pause for 2 minutes to ensure servers fully up
+          pause:
+            minutes: 2

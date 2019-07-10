@@ -1,0 +1,46 @@
+---
+    - name: teardown an azure vnet in the UK west region with public and private subnets, public and private NICs and secgrps
+      hosts: localhost
+      debugger: on_failed
+      gather_facts: yes
+      tasks:
+        
+        - name: delete websg
+          azure_rm_securitygroup:
+            resource_group: cloudexRG
+            name: websg
+            state: absent
+          register: websg_down
+
+        - debug: var=websg_down
+        
+        - name: delete the subnets
+          azure_rm_subnet:
+            resource_group: cloudexRG
+            name: 'cloudex_public'
+            virtual_network_name: "{{ VNET_NAME }}"
+            state: absent
+          register: subnets_down
+
+        - debug: var=subnets_down
+        
+        - name: teardown the vnet
+          azure_rm_virtualnetwork:
+            location: ukwest
+            resource_group: cloudexRG
+            name: "{{ VNET_NAME }}"
+            state: absent
+          register: vnet_down
+
+        - debug: var=vnet_down
+        
+        - name: delete the resource group
+          azure_rm_resourcegroup:
+            name: cloudexRG
+            location: ukwest
+            state: absent
+          register: rg_down
+
+        - debug: var=rg_down
+        
+        
