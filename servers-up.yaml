@@ -52,7 +52,7 @@
             ip_configurations:
               - name: "{{ item.confname }}"
                 primary: yes
-                load_balancer_backend_address_pools: 
+                load_balancer_backend_address_pools:
                   - name: backendaddrpool
                     load_balancer: cloudexLB
             state: present
@@ -62,7 +62,7 @@
           register: priv_nics_up
 
         - debug: var=priv_nics_up
-        
+
         - name: get PWD
           set_fact:
             pwd: "{{ lookup('env','PWD') }}"
@@ -74,7 +74,17 @@
         - name: create path to ssh key
           set_fact:
             ssh_key_pth: "{{ pwd }}/files/cloudex-eu-west-1.pem"
-        
+
+        - name: create availability set for vms
+          azure_rm_availabilityset:
+            name: cloudexAS
+            location: ukwest
+            resource_group: cloudexRG
+            state: present
+          register: aset_up
+
+        - debug: var=aset_up
+
         - name: standup 2 Ubuntu 18.04 LTS VM attaching to private NICs in a subnet of an existing VNET and use custom data to install nginx
           azure_rm_virtualmachine:
             resource_group: cloudexRG
@@ -82,6 +92,7 @@
             custom_data: "{{ lookup('file', '{{ custom_data_pth }}') }}"
             vm_size: Standard_B1s
             network_interfaces: "{{ item.nic }}"
+            availability_set: cloudexAS
             admin_username: cloudex
             ssh_password_enabled: no
             ssh_public_keys:

@@ -16,7 +16,17 @@
             - 'webvm_2'
           register: servers_down
 
-        - debug: var=servers_down 
+        - debug: var=servers_down
+
+        - name: delete availability set for vms
+          azure_rm_availabilityset:
+            name: cloudexAS
+            location: ukwest
+            resource_group: cloudexRG
+            state: absent
+          register: aset_down
+
+        - debug: var=aset_down
 
         - name: teardown the private NICs
           azure_rm_networkinterface:
@@ -30,7 +40,7 @@
 
         - debug: var=nics_down
 
-        - name: delete loadbalancer 
+        - name: delete loadbalancer
           azure_rm_loadbalancer:
             resource_group: cloudexRG
             name: cloudexLB
