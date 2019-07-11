@@ -4,3 +4,15 @@
       debugger: on_failed
       gather_facts: yes
       tasks:
+
+        #- name: standup 2 new VM and add them to the AS
+
+        #- name: wait for 3 minutes so VMs up
+
+        #- name: delete one existing VM and associated resources
+
+        #- name: add NIC to the VM
+
+        #- name: delete one existing VM and associated resources
+
+        #- name: add NIC to the VM

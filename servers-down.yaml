@@ -18,6 +18,10 @@
 
         - debug: var=servers_down
 
+        - name: pause for 5 minutes to ensure all down
+          pause:
+            minutes: 5
+
         - name: delete availability set for vms
           azure_rm_availabilityset:
             name: cloudexAS
@@ -57,7 +61,3 @@
           register: pub_ip_down
 
         - debug: var=pub_ip_down
-
-        - name: pause for 2 minutes to ensure all down
-          pause:
-            minutes: 2

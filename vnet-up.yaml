@@ -1,5 +1,5 @@
 ---
-    - name: standup an azure vnet in the UK west region with public and private subnets, public and private NICs and secgrps
+    - name: standup an azure vnet in the UK west region with public  subnets and web secgrp
       hosts: localhost
       debugger: on_failed
       gather_facts: yes
@@ -13,7 +13,7 @@
           register: rg_up
 
         - debug: var=rg_up
-        
+
         - name: standup the vnet
           azure_rm_virtualnetwork:
             location: ukwest
@@ -57,5 +57,4 @@
             state: present
           register: websg_up
 
-        - debug: var=websg_up              
-          
+        - debug: var=websg_up
