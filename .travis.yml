@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install -y python-minimal python-pip python-boto software-properties-common ntp unzip build-essential python3-pip
   - sudo pip install --upgrade pip
   - sudo pip install boto boto3  
-  - pip install --user ansible
+  - pip install --user ansible setuptools
   #- sudo pip install 'ansible[azure]' 
 addons:
   apt:
