@@ -11,8 +11,8 @@ before_install:
   - sudo pip install --upgrade setuptools
   - pip install --user ansible packaging
   - sudo pip install 'ansible[azure]' 
-  - pip uninstall requests
-  - pip install requests
+  - pip uninstall -y requests
+  - pip install -y requests
 addons:
   apt:
     update: true
