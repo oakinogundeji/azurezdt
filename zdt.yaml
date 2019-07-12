@@ -65,14 +65,14 @@
         - debug: var=new_servers_up
 
 
-        - name: pause for 3 minutes to ensure servers fully up
+        - name: pause for 5 minutes to ensure servers fully up
           pause:
-            minutes: 3
+            minutes: 5
 
         - name: delete one existing VM and associated resources
           azure_rm_virtualmachine:
             resource_group: cloudexRG
-            name: 'webvm_1'
+            name: 'webvm1'
             remove_on_absent: all_autocreated
             state: absent
           register: webvm_1_down
@@ -104,7 +104,7 @@
         - name: delete one existing VM and associated resources
           azure_rm_virtualmachine:
             resource_group: cloudexRG
-            name: 'webvm_2'
+            name: 'webvm2'
             remove_on_absent: all_autocreated
             state: absent
           register: webvm_2_down

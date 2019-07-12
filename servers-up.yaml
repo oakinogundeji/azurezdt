@@ -111,6 +111,6 @@
 
         - debug: var=servers_up
 
-        - name: pause for 3 minutes to ensure servers fully up
+        - name: pause for 5 minutes to ensure servers fully up
           pause:
-            minutes: 3
+            minutes: 5
