@@ -5,9 +5,12 @@ git:
   depth: 5
   quiet: true
 before_install:
-  - sudo apt-add-repository --yes --update ppa:ansible/ansible
-  - sudo apt-get install -y python-minimal python-pip python-boto software-properties-common ntp unzip build-essential ansible python3-pip
+  #- sudo apt-add-repository --yes --update ppa:ansible/ansible
+  #- curl -L https://aka.ms/InstallAzureCli | bash
+  - sudo apt-get install -y python-minimal python-pip python-boto software-properties-common ntp unzip build-essential python3-pip
   - sudo pip install boto boto3  
+  - pip install --user ansible
+  #- sudo pip install 'ansible[azure]' 
 addons:
   apt:
     update: true

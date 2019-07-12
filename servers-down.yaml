@@ -38,8 +38,8 @@
             name: "{{ item }}"
             state: absent
           with_items:
-            - 'cloudex_private_nic_1'
-            - 'cloudex_private_nic_2'
+            - 'cloudex_private_nic_3'
+            - 'cloudex_private_nic_4'
           register: nics_down
 
         - debug: var=nics_down
